@@ -1,0 +1,138 @@
+name: Publish Chess Engine Core Library
+
+on:
+  push:
+    branches: [ master ]
+    paths: 
+      - 'src/**'
+      - 'pom.xml'
+      - '.github/workflows/publish-chess-engine.yml'
+  pull_request:
+    branches: [ master ]
+    paths: 
+      - 'src/**'
+      - 'pom.xml'
+  release:
+    types: [created]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test Chess Engine Core
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+        
+    - name: Run tests
+      run: mvn clean test
+        
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    name: Build and Publish Chess Engine Core
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' || github.event_name == 'release'
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+        
+    - name: Update version for snapshot builds
+      if: github.event_name == 'push'
+      run: |
+        TIMESTAMP=$(date +%Y%m%d.%H%M%S)
+        COMMIT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+        NEW_VERSION="1.0.0-${TIMESTAMP}-${COMMIT_SHA}-SNAPSHOT"
+        mvn versions:set -DnewVersion=${NEW_VERSION}
+        echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+        
+    - name: Build library
+      run: mvn clean compile
+        
+    - name: Run tests
+      run: mvn test
+        
+    - name: Package library
+      run: mvn package
+        
+    - name: Publish to GitHub Packages
+      run: mvn deploy
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: chess-engine-core-jars
+        path: target/*.jar
+        retention-days: 30
+        
+  create-release-draft:
+    needs: [test, publish]
+    runs-on: ubuntu-latest
+    name: Create Release Draft
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        echo "## Chess Engine Core Library" >> release_notes.md
+        echo "" >> release_notes.md
+        echo "### Изменения:" >> release_notes.md
+        echo "- Автоматическая сборка от $(date)" >> release_notes.md
+        echo "- Commit: ${{ github.sha }}" >> release_notes.md
+        echo "" >> release_notes.md
+        echo "### Использование:" >> release_notes.md
+        echo '```xml' >> release_notes.md
+        echo '<dependency>' >> release_notes.md
+        echo '    <groupId>chess.mini</groupId>' >> release_notes.md
+        echo '    <artifactId>core</artifactId>' >> release_notes.md
+        echo '    <version>1.0.0</version>' >> release_notes.md
+        echo '</dependency>' >> release_notes.md
+        echo '```' >> release_notes.md
+        
+    - name: Create Draft Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v1.0.0-draft-${{ github.run_number }}
+        release_name: Chess Engine Core v1.0.0-draft-${{ github.run_number }}
+        body_path: release_notes.md
+        draft: true
+        prerelease: false
