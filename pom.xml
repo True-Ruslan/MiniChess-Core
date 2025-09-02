@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>chess.mini</groupId>
-    <artifactId>core</artifactId>
+    <artifactId>engine</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
     <name>MiniChess Core</name>
@@ -19,8 +19,8 @@
     </licenses>
     <developers>
         <developer>
-            <name>Ruslan</name>
-            <email>ruslan@example.com</email>
+            <name>Ruslan Nemykin</name>
+            <email>ruslan.nemkin@gmail.com</email>
         </developer>
     </developers>
 
