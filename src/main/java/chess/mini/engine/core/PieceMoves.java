@@ -1,8 +1,8 @@
-package chess.mini.core.core;
+package chess.mini.engine.core;
 
-import chess.mini.core.data.Color;
-import chess.mini.core.data.Piece;
-import chess.mini.core.data.Square;
+import chess.mini.engine.data.Color;
+import chess.mini.engine.data.Piece;
+import chess.mini.engine.data.Square;
 
 import java.util.ArrayList;
 import java.util.List;

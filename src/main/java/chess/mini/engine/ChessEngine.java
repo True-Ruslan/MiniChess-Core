@@ -1,8 +1,12 @@
-package chess.mini.core.core;
+package chess.mini.engine;
 
-import chess.mini.core.data.Color;
-import chess.mini.core.data.Piece;
-import chess.mini.core.data.Square;
+import chess.mini.engine.core.AttackChecker;
+import chess.mini.engine.core.Board;
+import chess.mini.engine.core.CheckDetector;
+import chess.mini.engine.core.MoveValidator;
+import chess.mini.engine.data.Color;
+import chess.mini.engine.data.Piece;
+import chess.mini.engine.data.Square;
 
 import java.util.List;
 

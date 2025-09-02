@@ -1,9 +1,9 @@
-package chess.mini.core;
+package chess.mini.engine;
 
-import chess.mini.core.core.Board;
-import chess.mini.core.data.Color;
-import chess.mini.core.data.Piece;
-import chess.mini.core.data.PieceType;
+import chess.mini.engine.core.Board;
+import chess.mini.engine.data.Color;
+import chess.mini.engine.data.Piece;
+import chess.mini.engine.data.PieceType;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
